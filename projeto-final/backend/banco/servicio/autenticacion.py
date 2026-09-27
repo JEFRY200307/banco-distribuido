@@ -15,12 +15,18 @@ class CredencialesInvalidas(Exception):
     pass
 
 
+class EmailYaRegistrado(Exception):
+    pass
+
+
 class ServicioAutenticacion:
 
     def __init__(self, repo_usuarios):
         self._usuarios = repo_usuarios
 
     def registrar_usuario(self, nombre: str, email: str, contrasena: str) -> dict:
+        if self._usuarios.buscar_por_email(email) is not None:
+            raise EmailYaRegistrado("ese email ya está registrado")
         usuario = {
             "id": str(uuid.uuid4()),
             "nombre": nombre,
@@ -39,6 +45,17 @@ class ServicioAutenticacion:
         if usuario is None or not verificar_contrasena(contrasena, usuario["password_hash"]):
             raise CredencialesInvalidas("email o contraseña incorrectos")
         return emitir_token(usuario["id"])
+
+    def recuperar_contrasena(self, email: str, contrasena_nueva: str) -> None:
+        """No hay servidor de correo: quien conoce el email define una clave nueva.
+
+        Si el email no existe, no hace nada y no lo dice — igual que el login
+        no revela qué emails están registrados.
+        """
+        usuario = self._usuarios.buscar_por_email(email)
+        if usuario is None:
+            return
+        self._usuarios.actualizar_contrasena(email, calcular_hash(contrasena_nueva))
 
     def validar_sesion(self, token: str) -> str:
         usuario_id = validar_token(token)

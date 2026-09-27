@@ -24,3 +24,11 @@ class RepositorioUsuarios:
                 """,
                 usuario,
             )
+
+    def actualizar_contrasena(self, email: str, password_hash: str) -> bool:
+        with self._conexion.cursor() as cur:
+            cur.execute(
+                "UPDATE usuario SET password_hash = %s WHERE email = %s",
+                (password_hash, email),
+            )
+            return cur.rowcount == 1

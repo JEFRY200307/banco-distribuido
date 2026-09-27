@@ -7,7 +7,7 @@ carga su propio `codigo` y `estado_http`, no hay que enumerarlos aquí).
 from fastapi import HTTPException
 
 from banco.dominio.erros import ErroDoBanco
-from banco.servicio.autenticacion import CredencialesInvalidas
+from banco.servicio.autenticacion import CredencialesInvalidas, EmailYaRegistrado
 
 
 def traducir(error: Exception) -> HTTPException:
@@ -20,6 +20,8 @@ def traducir(error: Exception) -> HTTPException:
         return HTTPException(status_code=404, detail={"erro": "no_encontrado", "mensagem": str(error)})
     if isinstance(error, CredencialesInvalidas):
         return HTTPException(status_code=401, detail={"erro": "credenciales_invalidas", "mensagem": str(error)})
+    if isinstance(error, EmailYaRegistrado):
+        return HTTPException(status_code=409, detail={"erro": "email_ya_registrado", "mensagem": str(error)})
     if isinstance(error, RuntimeError) and str(error) == "sin_quorum":
         return HTTPException(status_code=503, detail={"erro": "sin_quorum",
                                                         "mensagem": "reintentar con el mismo op_id"})

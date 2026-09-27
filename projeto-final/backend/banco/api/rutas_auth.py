@@ -20,10 +20,24 @@ class LoginRequest(BaseModel):
     contrasena: str
 
 
+class RecuperarRequest(BaseModel):
+    email: str
+    contrasena: str
+
+
 @router.post("/registro")
 def registrar(req: RegistroRequest, servicio=Depends(obtener_servicio_autenticacion)):
     try:
         return servicio.registrar_usuario(req.nombre, req.email, req.contrasena)
+    except Exception as error:
+        raise traducir(error)
+
+
+@router.post("/recuperar")
+def recuperar(req: RecuperarRequest, servicio=Depends(obtener_servicio_autenticacion)):
+    try:
+        servicio.recuperar_contrasena(req.email, req.contrasena)
+        return {"mensaje": "Si el email está registrado, la contraseña quedó actualizada"}
     except Exception as error:
         raise traducir(error)
 
