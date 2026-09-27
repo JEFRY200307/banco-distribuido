@@ -52,7 +52,7 @@ def obtener_servicio_auditoria():
 def obtener_servicio_autenticacion():
     conexion = obtener_conexion()
     try:
-        yield ServicioAutenticacion(RepositorioUsuarios(conexion))
+        yield ServicioAutenticacion(RepositorioUsuarios(conexion), NODO)
         conexion.commit()
     except Exception:
         conexion.rollback()

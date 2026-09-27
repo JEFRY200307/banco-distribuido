@@ -1,6 +1,6 @@
 # Prueba de los servidores
 
-Orden para comprobar que Vercel, la Lambda y los dos backends se hablan. Hazlo después de reconstruir las imágenes de los EC2 si el código del backend cambió (`GUIA-REBUILD-EC2.md`). Si no reconstruyes, el registro y el login viejos siguen; `POST /auth/recuperar` todavía no existe en el nodo y responde 404.
+Orden para comprobar que Vercel, la Lambda y los dos backends se hablan. El detalle por requisito, con fallas, está en [`GUIA-PRUEBA-RF-RNF.md`](GUIA-PRUEBA-RF-RNF.md). Hazlo después de reconstruir las imágenes de los EC2 si el código del backend cambió (`GUIA-REBUILD-EC2.md`). Si no reconstruyes, el registro y el login viejos siguen; `POST /auth/recuperar` todavía no existe en el nodo y responde 404.
 
 Sustituye las IP por las públicas actuales de `backend-a` y `backend-b`. El puerto es `8001`. Desde tu casa ese puerto responde solo si tu IP está en el grupo `banco-backend`. La Lambda entra por el grupo `banco-lambda`.
 
@@ -13,7 +13,7 @@ http://IP_BACKEND_A:8001/interno/estado
 http://IP_BACKEND_B:8001/interno/estado
 ```
 
-Cada uno debe devolver JSON con `nodo`, `rol` y `epoch`. Solo A debe decir `primario`. B debe decir `replica`. Las lecturas y las escrituras las atiende A: B todavía no recibe copia de los datos.
+Cada uno debe devolver JSON con `nodo`, `rol`, `epoch` y `modo`. Con los dos backends en `PARES`, `modo` es `arrendamiento`. Solo uno dice `primario`. El otro dice `replica`. Un depósito confirmado queda en los dos Postgres; el detalle está en `TOLERANCIA-Y-CONCURRENCIA.md`.
 
 ## 2. La Lambda llega a un nodo
 

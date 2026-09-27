@@ -3,9 +3,9 @@ docs/entregables/03-arquitectura/diagrama-de-componentes.md, sección
 "Por qué el balanceador es un componente propio".
 
 No es un balanceador de carga clásico (round-robin): solo hay un primario.
-Lecturas y escrituras van a ese nodo. Una réplica todavía no tiene copia
-de las cuentas, así que un GET contra ella devolvería "no existe". Cuando
-la réplica esté al día, las lecturas podrán volver a cualquier nodo vivo.
+Lecturas y escrituras van a ese nodo, el de `epoch` más alto si dos se
+anuncian a la vez. La réplica puede ir un latido por detrás, así que un
+GET no se manda ahí.
 
 Sin estado durable: si este proceso se reinicia, vuelve a preguntar. Por
 eso correr dos copias no necesita ningún protocolo de consenso.
@@ -48,15 +48,26 @@ class Enrutador:
         raise RuntimeError("sin_nodos_disponibles")
 
     def encontrar_primario(self) -> str:
+        mejor_url = None
+        mejor_epoch = -1
         for url in self._candidatos():
             try:
                 r = httpx.get(f"{url}/interno/estado", timeout=self._timeout_s)
-                if r.status_code == 200 and r.json().get("rol") == "primario":
-                    self._primario_cacheado = url
-                    return url
             except httpx.HTTPError:
                 continue
-        raise RuntimeError("sin_primario_disponible")
+            if r.status_code != 200:
+                continue
+            cuerpo = r.json()
+            if cuerpo.get("rol") != "primario":
+                continue
+            epoch = int(cuerpo.get("epoch") or 0)
+            if mejor_url is None or epoch > mejor_epoch:
+                mejor_epoch = epoch
+                mejor_url = url
+        if mejor_url is None:
+            raise RuntimeError("sin_primario_disponible")
+        self._primario_cacheado = mejor_url
+        return mejor_url
 
     def reenviar(self, metodo: str, ruta: str, es_escritura: bool, **kwargs) -> httpx.Response:
         """Reenvía una petición. Si el nodo que creíamos primario rechaza con
@@ -66,7 +77,7 @@ class Enrutador:
         respuesta = httpx.request(metodo, f"{url}{ruta}", timeout=self._timeout_s, **kwargs)
 
         if es_escritura and respuesta.status_code == 409:
-            cuerpo = respuesta.json()
+            cuerpo = _cuerpo(respuesta)
             probable = cuerpo.get("primario_provavel")
             if probable:
                 logger.info("siguiendo primario_provavel=%s tras 409", probable)
@@ -74,3 +85,11 @@ class Enrutador:
                 respuesta = httpx.request(metodo, f"{probable}{ruta}",
                                            timeout=self._timeout_s, **kwargs)
         return respuesta
+
+
+def _cuerpo(respuesta: httpx.Response) -> dict:
+    cuerpo = respuesta.json()
+    detalle = cuerpo.get("detail")
+    if isinstance(detalle, dict):
+        return detalle
+    return cuerpo

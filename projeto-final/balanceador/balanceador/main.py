@@ -1,8 +1,8 @@
 """Expone las mismas rutas públicas que un nodo — el cliente/frontend le
 habla solo a esto, nunca directo a un nodo (ver diagrama-de-despliegue.md).
 
-Regla de enrutamiento: GET, POST, PUT y DELETE van al único primario.
-La réplica no tiene los datos todavía; un GET contra ella fallaría.
+Regla de enrutamiento: GET, POST, PUT y DELETE van al primario de mayor
+epoch. La réplica puede ir un latido atrasada, así que un GET no se manda ahí.
 """
 
 import logging

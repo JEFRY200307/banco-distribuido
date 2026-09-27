@@ -80,3 +80,18 @@ CREATE TABLE operacion (
 );
 CREATE INDEX idx_operacion_origen ON operacion(cuenta_origen_id, fecha_hora);
 CREATE INDEX idx_operacion_destino ON operacion(cuenta_destino_id, fecha_hora);
+
+-- Log del protocolo. Cada nodo lo guarda en SU Postgres. El proceso también
+-- lo crea al arrancar (CREATE TABLE IF NOT EXISTS) por si esta base ya existía.
+CREATE TABLE log_replicacion (
+    indice  BIGINT PRIMARY KEY,
+    epoch   BIGINT NOT NULL,
+    op_id   VARCHAR(64) NOT NULL UNIQUE,
+    tipo    VARCHAR(40) NOT NULL,
+    cuerpo  JSONB NOT NULL
+);
+
+CREATE TABLE nodo_estado (
+    clave  VARCHAR(40) PRIMARY KEY,
+    valor  VARCHAR(120) NOT NULL
+);

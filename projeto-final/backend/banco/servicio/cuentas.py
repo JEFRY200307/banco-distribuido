@@ -14,7 +14,7 @@ from datetime import datetime, timezone
 
 from banco.dominio.contas import Conta, Livro
 from banco.dominio.operacoes import CriarConta, Deposito, Saque
-from banco.servicio._comun import fila_operacion
+from banco.servicio._comun import fila_operacion, para_json
 
 
 def _fila_vacia(cuenta_id: str, usuario_id: str, moneda: str, saldo_centavos: int,
@@ -45,14 +45,15 @@ class ServicioCuentas:
         resultado = CriarConta(cuenta_id, saldo_inicial_centavos).aplicar(
             libro, indice=1, instante=datetime.now(timezone.utc).timestamp())
 
-        if not self._nodo.replicar_y_esperar_mayoria({"op_id": op_id, "tipo": "CREACION"}):
-            raise RuntimeError("sin_quorum")
-
         ahora = datetime.now(timezone.utc)
-        self._cuentas.guardar(_fila_vacia(
-            cuenta_id, usuario_id, moneda, resultado["saldo_centavos"], ahora))
-        self._operaciones.guardar(fila_operacion(
-            op_id, "CREACION", None, cuenta_id, saldo_inicial_centavos, ahora))
+        cuerpo = {
+            "cuenta": para_json(_fila_vacia(
+                cuenta_id, usuario_id, moneda, resultado["saldo_centavos"], ahora)),
+            "operacion": para_json(fila_operacion(
+                op_id, "CREACION", None, cuenta_id, saldo_inicial_centavos, ahora)),
+        }
+        if not self._nodo.proponer(op_id, "CREACION", cuerpo):
+            raise RuntimeError("sin_quorum")
         return {"id": cuenta_id, "saldo_centavos": resultado["saldo_centavos"]}
 
     def consultar_saldo(self, cuenta_id: str) -> dict:
@@ -78,16 +79,17 @@ class ServicioCuentas:
         resultado = operacion_cls(cuenta_id, valor_centavos).aplicar(
             libro, indice=1, instante=datetime.now(timezone.utc).timestamp())
 
-        if not self._nodo.replicar_y_esperar_mayoria({"op_id": op_id, "tipo": tipo}):
-            raise RuntimeError("sin_quorum")
-
         ahora = datetime.now(timezone.utc)
-        fila["saldo_centavos"] = resultado["saldo_centavos"]
-        self._cuentas.guardar(fila)
         origen = cuenta_id if tipo == "RETIRO" else None
         destino = cuenta_id if tipo == "DEPOSITO" else None
-        self._operaciones.guardar(fila_operacion(
-            op_id, tipo, origen, destino, valor_centavos, ahora))
+        cuerpo = {
+            "cuenta_id": cuenta_id,
+            "saldo_centavos": resultado["saldo_centavos"],
+            "operacion": para_json(fila_operacion(
+                op_id, tipo, origen, destino, valor_centavos, ahora)),
+        }
+        if not self._nodo.proponer(op_id, tipo, cuerpo):
+            raise RuntimeError("sin_quorum")
         return {"id": cuenta_id, "saldo_centavos": resultado["saldo_centavos"]}
 
     def depositar(self, cuenta_id: str, monto_centavos: int, op_id: str) -> dict:
