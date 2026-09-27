@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import Carga from "./componentes/Carga.jsx";
 import { leerToken } from "./lib/sesion.js";
 import Login from "./paginas/Login.jsx";
@@ -26,8 +26,7 @@ function Privada({ children }) {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Suspense fallback={<Carga />}>
+    <Suspense fallback={<Carga />}>
         <Routes>
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/login" element={<Login />} />
@@ -47,7 +46,6 @@ export default function App() {
           <Route path="/estado" element={<Privada><Estado /></Privada>} />
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
-      </Suspense>
-    </BrowserRouter>
+    </Suspense>
   );
 }
