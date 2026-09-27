@@ -1,52 +1,50 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { api } from "../api/cliente.js";
+import Aviso from "../componentes/Aviso.jsx";
+import Boton from "../componentes/Boton.jsx";
+import Campo from "../componentes/Campo.jsx";
+import Pantalla from "../componentes/Pantalla.jsx";
+import { guardarToken } from "../lib/sesion.js";
 
-// CU-17 — ver docs/entregables/02-casos-de-uso/cu-17-iniciar-sesion.md
 export default function Login() {
   const [email, setEmail] = useState("");
   const [contrasena, setContrasena] = useState("");
   const [error, setError] = useState(null);
+  const [ocupado, setOcupado] = useState(false);
   const navegar = useNavigate();
+  const aviso = useLocation().state?.aviso;
 
   async function enviar(evento) {
     evento.preventDefault();
     setError(null);
+    setOcupado(true);
     try {
       const { token } = await api.login(email, contrasena);
-      localStorage.setItem("token", token);
-      navegar("/cuentas");
+      guardarToken(token);
+      navegar("/inicio");
     } catch (err) {
-      // mismo mensaje para email inexistente o contraseña incorrecta (E1/E2)
-      setError("Email o contraseña incorrectos");
+      setError(err.message === "error de red" ? "Email o contraseña incorrectos" : err.message);
+    } finally {
+      setOcupado(false);
     }
   }
 
   return (
-    <div className="telefono">
-      <header>
-        <h1>Iniciar sesión</h1>
-      </header>
-      <main>
-        <form className="tarjeta" onSubmit={enviar}>
-          <div className="campo">
-            <label>Email</label>
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-          </div>
-          <div className="campo">
-            <label>Contraseña</label>
-            <input type="password" value={contrasena}
-                   onChange={(e) => setContrasena(e.target.value)} required />
-          </div>
-          {error && (
-            <div className="aviso aviso-error">
-              <span className="punto">●</span>
-              <span>{error}</span>
-            </div>
-          )}
-          <button className="btn-confirmar" type="submit">Entrar</button>
-        </form>
-      </main>
-    </div>
+    <Pantalla titulo="Iniciar sesión">
+      <form className="tarjeta" onSubmit={enviar}>
+        <Campo etiqueta="Email" type="email" autoComplete="email" value={email}
+               onChange={(e) => setEmail(e.target.value)} required />
+        <Campo etiqueta="Contraseña" type="password" autoComplete="current-password"
+               value={contrasena} onChange={(e) => setContrasena(e.target.value)} required />
+        <Aviso>{aviso}</Aviso>
+        <Aviso error>{error}</Aviso>
+        <Boton disabled={ocupado}>{ocupado ? "Entrando…" : "Entrar"}</Boton>
+      </form>
+      <div className="enlaces">
+        <Link to="/registro">Crear usuario</Link>
+        <Link to="/recuperar">Recuperar contraseña</Link>
+      </div>
+    </Pantalla>
   );
 }
