@@ -55,15 +55,19 @@ docker rm -f NOMBRE
 docker run -d --name NOMBRE -p 8001:8001 \
   --restart unless-stopped \
   -e NODO_ID=A -e ROL=primario -e PUERTO=8001 \
+  -e URL_PROPIA=http://IP_PRIVADA_DE_ESTE_BACKEND:8001 \
+  -e PARES=http://IP_PRIVADA_DEL_OTRO_BACKEND:8001 \
   -e PGHOST=IP_PRIVADA_DE_POSTGRES_A -e PGPORT=5432 \
   -e PGDATABASE=banco -e PGUSER=banco -e PGPASSWORD='LA_QUE_COPIASTE' \
   -e SECRET_KEY='LA_QUE_COPIASTE' \
   backend
 ```
 
-En `backend-b` cambia `NODO_ID=B`, `ROL=replica`, el nombre del contenedor y el `PGHOST` de `postgres-b`. No borres el contenedor de Postgres. Sin `ROL`, el código igual trata solo a A como primario.
+`PARES` y `URL_PROPIA` son las IP privadas de los **backends**, puerto `8001`, no las de Postgres. Con un solo par, el modo es arrendamiento: si uno se apaga, el otro sigue escribiendo. No agregues un tercer nodo que no existe: el modo pasaría a mayoría y el que quede vivo no podría confirmar solo.
 
-El cambio de los GET vive en el balanceador, no en estos contenedores. Hay que reconstruir la imagen de la Lambda (`GUIA-DESPLIEGUE.md`, paso 4.2) desde `JEFRY200307/banco-distribuido` y publicarla en ECR. Si no, la Lambda sigue mandando las lecturas al primer nodo vivo.
+En `backend-b` cambia `NODO_ID=B`, `ROL=replica`, `URL_PROPIA` a la IP de B, `PARES` a la IP de A, el nombre del contenedor y el `PGHOST` de `postgres-b`. No borres el contenedor de Postgres.
+
+Conviene reconstruir también la imagen de la Lambda (`GUIA-DESPLIEGUE.md`, paso 4.2) desde `JEFRY200307/banco-distribuido`. Así, si dos nodos se anuncian primario, se queda con el `epoch` más alto. Si la imagen vieja sigue, igual salta al primero que diga `primario`.
 
 ## 6. Comprueba antes de irte
 

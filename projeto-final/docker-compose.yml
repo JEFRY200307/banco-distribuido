@@ -42,6 +42,8 @@ services:
       ROL: primario
       NODO_ID: A
       PUERTO: "8001"
+      URL_PROPIA: http://nodo-a:8001
+      PARES: http://nodo-b:8001,http://nodo-c:8001
       PGHOST: postgres-a
       PGPORT: "5432"
       PGDATABASE: banco
@@ -56,6 +58,8 @@ services:
       ROL: replica
       NODO_ID: B
       PUERTO: "8001"
+      URL_PROPIA: http://nodo-b:8001
+      PARES: http://nodo-a:8001,http://nodo-c:8001
       PGHOST: postgres-b
       PGPORT: "5432"
       PGDATABASE: banco
@@ -70,6 +74,8 @@ services:
       ROL: replica
       NODO_ID: C
       PUERTO: "8001"
+      URL_PROPIA: http://nodo-c:8001
+      PARES: http://nodo-a:8001,http://nodo-b:8001
       PGHOST: postgres-c
       PGPORT: "5432"
       PGDATABASE: banco

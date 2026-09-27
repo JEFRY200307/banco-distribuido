@@ -21,8 +21,9 @@ class EmailYaRegistrado(Exception):
 
 class ServicioAutenticacion:
 
-    def __init__(self, repo_usuarios):
+    def __init__(self, repo_usuarios, nodo=None):
         self._usuarios = repo_usuarios
+        self._nodo = nodo
 
     def registrar_usuario(self, nombre: str, email: str, contrasena: str) -> dict:
         if self._usuarios.buscar_por_email(email) is not None:
@@ -34,7 +35,12 @@ class ServicioAutenticacion:
             "password_hash": calcular_hash(contrasena),
             "fecha_creacion": datetime.now(timezone.utc),
         }
-        self._usuarios.guardar(usuario)
+        if self._nodo is None:
+            self._usuarios.guardar(usuario)
+        else:
+            cuerpo = {"usuario": {**usuario, "fecha_creacion": usuario["fecha_creacion"].isoformat()}}
+            if not self._nodo.proponer(usuario["id"], "REGISTRO", cuerpo):
+                raise RuntimeError("sin_quorum")
         return {"id": usuario["id"], "email": email}
 
     def iniciar_sesion(self, email: str, contrasena: str) -> str:
@@ -55,7 +61,13 @@ class ServicioAutenticacion:
         usuario = self._usuarios.buscar_por_email(email)
         if usuario is None:
             return
-        self._usuarios.actualizar_contrasena(email, calcular_hash(contrasena_nueva))
+        password_hash = calcular_hash(contrasena_nueva)
+        if self._nodo is None:
+            self._usuarios.actualizar_contrasena(email, password_hash)
+            return
+        if not self._nodo.proponer(str(uuid.uuid4()), "CLAVE",
+                                   {"email": email, "password_hash": password_hash}):
+            raise RuntimeError("sin_quorum")
 
     def validar_sesion(self, token: str) -> str:
         usuario_id = validar_token(token)

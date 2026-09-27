@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 
 from banco.dominio.contas import Conta, Livro
 from banco.dominio.operacoes import Transferencia
-from banco.servicio._comun import fila_operacion
+from banco.servicio._comun import fila_operacion, para_json
 
 
 class ServicioTransferencias:
@@ -41,16 +41,14 @@ class ServicioTransferencias:
         resultado = Transferencia(origen_id, destino_id, monto_centavos).aplicar(
             libro, indice=1, instante=datetime.now(timezone.utc).timestamp())
 
-        if not self._nodo.replicar_y_esperar_mayoria({"op_id": op_id, "tipo": "TRANSFERENCIA"}):
-            raise RuntimeError("sin_quorum")
-
         ahora = datetime.now(timezone.utc)
-        fila_origen["saldo_centavos"] = resultado["saldos_centavos"][origen_id]
-        fila_destino["saldo_centavos"] = resultado["saldos_centavos"][destino_id]
-        self._cuentas.guardar(fila_origen)
-        self._cuentas.guardar(fila_destino)
-        self._operaciones.guardar(fila_operacion(
-            op_id, "TRANSFERENCIA", origen_id, destino_id, monto_centavos, ahora))
+        cuerpo = {
+            "saldos_centavos": resultado["saldos_centavos"],
+            "operacion": para_json(fila_operacion(
+                op_id, "TRANSFERENCIA", origen_id, destino_id, monto_centavos, ahora)),
+        }
+        if not self._nodo.proponer(op_id, "TRANSFERENCIA", cuerpo):
+            raise RuntimeError("sin_quorum")
         return resultado
 
     def transferir_con_conversion(self, *args, **kwargs):
