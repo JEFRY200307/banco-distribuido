@@ -1,15 +1,15 @@
-"""Nodo del clúster — TODO real en ROADMAP.md, subfase 2.x (Cristhian).
+"""Nodo del clúster — la elección real sigue en ROADMAP.md, subfase 2.x.
 
-Esta clase hoy se comporta como el `No` de Prototipo 1: acepta todo, sin
-quórum ni elección, porque el protocolo real (replicación, voto, fencing por
-`epoch`) todavía no está escrito. Se deja aquí, y no vacía, para que `api/`
-y `servicio/` ya tengan a quién llamar — cuando el protocolo real exista,
-esta clase gana un `ClienteInterno` que hable con los otros nodos y el
-resto del código no debería tener que cambiar.
+Hasta que exista el voto, el rol no puede quedar en "todos son primario":
+el balanceador mandaría cada petición a un nodo distinto y los datos no
+están copiados. Sin variable `ROL`, solo el nodo A es primario. `ROL=primario`
+o `ROL=replica` lo pisa (para promover a B si A cae, a mano).
 
-Ver docs/entregables/06-diseno-detallado/diagrama-de-estados-nodo.md para el
-comportamiento que falta.
+La replicación sigue en stub: `replicar_y_esperar_mayoria` confirma en este
+nodo solo. Por eso las lecturas también tienen que ir al primario.
 """
+
+import os
 
 
 class Nodo:
@@ -19,10 +19,10 @@ class Nodo:
         self._epoch = 1
 
     def es_primario(self) -> bool:
-        # TODO(prototipo-2): reemplazar por la máquina de estados real
-        # (RÉPLICA / CANDIDATO / PRIMARIO). Hoy todo nodo se comporta como
-        # primario porque no hay con quién competir el rol.
-        return True
+        rol = os.environ.get("ROL")
+        if rol:
+            return rol.strip().lower() == "primario"
+        return self.id == "A"
 
     def estado(self) -> dict:
         return {

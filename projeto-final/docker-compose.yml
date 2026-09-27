@@ -39,6 +39,7 @@ services:
     <<: *nodo-comun
     environment:
       SECRET_KEY: ${SECRET_KEY:-llave-de-desarrollo-cambiar-en-produccion}
+      ROL: primario
       NODO_ID: A
       PUERTO: "8001"
       PGHOST: postgres-a
@@ -52,6 +53,7 @@ services:
     <<: *nodo-comun
     environment:
       SECRET_KEY: ${SECRET_KEY:-llave-de-desarrollo-cambiar-en-produccion}
+      ROL: replica
       NODO_ID: B
       PUERTO: "8001"
       PGHOST: postgres-b
@@ -65,6 +67,7 @@ services:
     <<: *nodo-comun
     environment:
       SECRET_KEY: ${SECRET_KEY:-llave-de-desarrollo-cambiar-en-produccion}
+      ROL: replica
       NODO_ID: C
       PUERTO: "8001"
       PGHOST: postgres-c

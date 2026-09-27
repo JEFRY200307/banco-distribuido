@@ -1,9 +1,8 @@
 """Expone las mismas rutas públicas que un nodo — el cliente/frontend le
 habla solo a esto, nunca directo a un nodo (ver diagrama-de-despliegue.md).
 
-Regla de enrutamiento: GET es lectura (cualquier nodo), todo lo demás
-(POST/PUT/DELETE) es escritura (al primario) — coincide con cómo está
-diseñada la API en banco/api/ (ninguna escritura usa GET).
+Regla de enrutamiento: GET, POST, PUT y DELETE van al único primario.
+La réplica no tiene los datos todavía; un GET contra ella fallaría.
 """
 
 import logging

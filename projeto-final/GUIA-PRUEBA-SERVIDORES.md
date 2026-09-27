@@ -13,7 +13,7 @@ http://IP_BACKEND_A:8001/interno/estado
 http://IP_BACKEND_B:8001/interno/estado
 ```
 
-Cada uno debe devolver JSON con `nodo`, `rol` y `epoch`. Hoy los dos pueden decir `primario`: la réplica entre nodos todavía no reparte los datos. Un alta hecha en A no aparece en B.
+Cada uno debe devolver JSON con `nodo`, `rol` y `epoch`. Solo A debe decir `primario`. B debe decir `replica`. Las lecturas y las escrituras las atiende A: B todavía no recibe copia de los datos.
 
 ## 2. La Lambda llega a un nodo
 
