@@ -54,14 +54,16 @@ docker build -t backend .
 docker rm -f NOMBRE
 docker run -d --name NOMBRE -p 8001:8001 \
   --restart unless-stopped \
-  -e NODO_ID=A -e PUERTO=8001 \
+  -e NODO_ID=A -e ROL=primario -e PUERTO=8001 \
   -e PGHOST=IP_PRIVADA_DE_POSTGRES_A -e PGPORT=5432 \
   -e PGDATABASE=banco -e PGUSER=banco -e PGPASSWORD='LA_QUE_COPIASTE' \
   -e SECRET_KEY='LA_QUE_COPIASTE' \
   backend
 ```
 
-En `backend-b` cambia `NODO_ID=B`, el nombre del contenedor y el `PGHOST` de `postgres-b`. No borres el contenedor de Postgres.
+En `backend-b` cambia `NODO_ID=B`, `ROL=replica`, el nombre del contenedor y el `PGHOST` de `postgres-b`. No borres el contenedor de Postgres. Sin `ROL`, el código igual trata solo a A como primario.
+
+El cambio de los GET vive en el balanceador, no en estos contenedores. Hay que reconstruir la imagen de la Lambda (`GUIA-DESPLIEGUE.md`, paso 4.2) desde `JEFRY200307/banco-distribuido` y publicarla en ECR. Si no, la Lambda sigue mandando las lecturas al primer nodo vivo.
 
 ## 6. Comprueba antes de irte
 

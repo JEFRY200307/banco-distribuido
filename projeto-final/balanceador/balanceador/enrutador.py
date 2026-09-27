@@ -2,11 +2,10 @@
 docs/entregables/03-arquitectura/diagrama-de-componentes.md, sección
 "Por qué el balanceador es un componente propio".
 
-No es un balanceador de carga clásico (round-robin): solo el primario
-acepta escrituras, así que este componente pregunta quién es el primario
-ahora mismo, lo cachea, y sigue la redirección de un 409 cuando se
-equivoca — exactamente lo que RF-13 ya le pide al cliente en CU-04, solo
-que centralizado aquí en vez de repetido en cada cliente.
+No es un balanceador de carga clásico (round-robin): solo hay un primario.
+Lecturas y escrituras van a ese nodo. Una réplica todavía no tiene copia
+de las cuentas, así que un GET contra ella devolvería "no existe". Cuando
+la réplica esté al día, las lecturas podrán volver a cualquier nodo vivo.
 
 Sin estado durable: si este proceso se reinicia, vuelve a preguntar. Por
 eso correr dos copias no necesita ningún protocolo de consenso.
@@ -37,8 +36,8 @@ class Enrutador:
         return urls
 
     def cualquier_nodo_vivo(self) -> str:
-        """Para lecturas: no importa cuál, todas las cuentas están en
-        todos los nodos (RN-04)."""
+        """Primer nodo que responda. No lo usa `reenviar`: sin réplica de
+        datos, leer ahí pierde cuentas que solo están en el primario."""
         for url in self._candidatos():
             try:
                 r = httpx.get(f"{url}/interno/estado", timeout=self._timeout_s)
@@ -63,7 +62,7 @@ class Enrutador:
         """Reenvía una petición. Si el nodo que creíamos primario rechaza con
         409 (`nao_sou_primario`), sigue `primario_provavel` y reintenta una
         vez — igual que ya hace el cliente en CU-04, flujo 3a."""
-        url = self.encontrar_primario() if es_escritura else self.cualquier_nodo_vivo()
+        url = self.encontrar_primario()
         respuesta = httpx.request(metodo, f"{url}{ruta}", timeout=self._timeout_s, **kwargs)
 
         if es_escritura and respuesta.status_code == 409:

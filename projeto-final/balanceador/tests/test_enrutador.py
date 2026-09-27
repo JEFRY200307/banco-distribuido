@@ -55,5 +55,31 @@ class TestEncontrarPrimario(unittest.TestCase):
             httpx.get = original
 
 
+class TestReenviar(unittest.TestCase):
+
+    def test_lectura_va_al_primario_y_no_a_la_replica(self):
+        vistos = []
+
+        def manejador(request: httpx.Request) -> httpx.Response:
+            vistos.append(str(request.url))
+            if request.url.path == "/interno/estado":
+                rol = "primario" if "nodo-b" in str(request.url) else "replica"
+                return httpx.Response(200, json={"rol": rol})
+            return httpx.Response(200, json={"ok": True})
+
+        cliente = httpx.Client(transport=httpx.MockTransport(manejador))
+        original_get, original_request = httpx.get, httpx.request
+        httpx.get = lambda url, timeout: cliente.get(url)
+        httpx.request = lambda metodo, url, timeout, **kwargs: cliente.request(metodo, url)
+        try:
+            enrutador = Enrutador(NODOS, _url_base)
+            respuesta = enrutador.reenviar("GET", "/cuentas/1", False)
+            self.assertEqual(respuesta.status_code, 200)
+            self.assertTrue(any(url.startswith("http://nodo-b:8001/cuentas/1") for url in vistos))
+            self.assertFalse(any(url.startswith("http://nodo-a:8001/cuentas/1") for url in vistos))
+        finally:
+            httpx.get, httpx.request = original_get, original_request
+
+
 if __name__ == "__main__":
     unittest.main()
