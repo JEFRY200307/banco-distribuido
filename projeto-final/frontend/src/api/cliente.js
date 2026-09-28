@@ -44,6 +44,7 @@ export const api = {
   crearCuenta: (usuario_id, moneda, saldo_inicial_centavos) =>
     peticion("/cuentas", { metodo: "POST", cuerpo: { usuario_id, moneda, saldo_inicial_centavos } }),
   listarCuentas: () => peticion("/cuentas"),
+  buscarPorNumero: (numero) => peticion(`/cuentas/por-numero/${encodeURIComponent(numero)}`),
   consultarSaldo: (cuentaId) => peticion(`/cuentas/${cuentaId}`),
   consultarExtracto: (cuentaId) => peticion(`/cuentas/${cuentaId}/extracto`),
   depositar: (cuentaId, montoCentavos) =>

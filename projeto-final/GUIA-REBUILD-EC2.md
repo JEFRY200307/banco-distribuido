@@ -46,6 +46,18 @@ git pull origin main
 
 `git remote -v` tiene que mostrar `JEFRY200307/banco-distribuido`. Si `git pull` pide usuario, el repo es privado: usa un token de GitHub como contraseña, no la clave de la cuenta.
 
+## 4.1. Número de cuenta en las dos bases
+
+Hazlo antes de reemplazar el contenedor del backend, y en los dos Postgres. Desde la instancia del backend (ya con el `git pull`), contra el `PGHOST` de ese nodo:
+
+```bash
+docker run --rm -i postgres:16-alpine \
+  psql "postgresql://banco:LA_PASSWORD@PGHOST:5432/banco" \
+  < ~/banco-distribuido/projeto-final/db/migracion-numero-cuenta.sql
+```
+
+La consulta del final tiene que listar cada cuenta con `agencia` 0001 y un `numero_cuenta` como `61760246-8`. Repite el comando en el otro backend, con el `PGHOST` de su Postgres. No borres el contenedor de Postgres.
+
 ## 5. Reconstruye solo la imagen del backend
 
 ```bash

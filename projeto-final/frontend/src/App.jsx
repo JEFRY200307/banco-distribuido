@@ -14,8 +14,6 @@ const Depositar = lazy(() => import("./paginas/acciones/Depositar.jsx"));
 const Retirar = lazy(() => import("./paginas/acciones/Retirar.jsx"));
 const Extracto = lazy(() => import("./paginas/acciones/Extracto.jsx"));
 const Transferir = lazy(() => import("./paginas/acciones/Transferir.jsx"));
-const Conversion = lazy(() => import("./paginas/acciones/Conversion.jsx"));
-const Autotransferencia = lazy(() => import("./paginas/acciones/Autotransferencia.jsx"));
 const Auditoria = lazy(() => import("./paginas/acciones/Auditoria.jsx"));
 const Estado = lazy(() => import("./paginas/acciones/Estado.jsx"));
 
@@ -40,8 +38,8 @@ export default function App() {
           <Route path="/retirar" element={<Privada><Retirar /></Privada>} />
           <Route path="/extracto" element={<Privada><Extracto /></Privada>} />
           <Route path="/transferir" element={<Privada><Transferir /></Privada>} />
-          <Route path="/conversion" element={<Privada><Conversion /></Privada>} />
-          <Route path="/autotransferencia" element={<Privada><Autotransferencia /></Privada>} />
+          <Route path="/conversion" element={<Navigate to="/transferir" replace />} />
+          <Route path="/autotransferencia" element={<Navigate to="/transferir" replace />} />
           <Route path="/auditoria" element={<Privada><Auditoria /></Privada>} />
           <Route path="/estado" element={<Privada><Estado /></Privada>} />
           <Route path="*" element={<Navigate to="/login" replace />} />

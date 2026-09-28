@@ -15,15 +15,17 @@ from datetime import datetime, timezone
 from banco.dominio.contas import Conta, Livro
 from banco.dominio.operacoes import CriarConta, Deposito, Saque
 from banco.servicio._comun import fila_operacion, para_json
+from banco.servicio.numero_cuenta import AGENCIA, elegir_numero, normalizar_numero
 
 
 def _fila_vacia(cuenta_id: str, usuario_id: str, moneda: str, saldo_centavos: int,
-                 ahora: datetime) -> dict:
+                 ahora: datetime, numero_cuenta: str) -> dict:
     return {
         "id": cuenta_id, "usuario_id": usuario_id, "moneda": moneda,
         "saldo_centavos": saldo_centavos, "fecha_creacion": ahora,
         "estado": "ACTIVA", "tipo_producto": "CORRIENTE", "tasa_interes": None,
         "fecha_ultimo_interes": None, "fecha_vencimiento": None,
+        "agencia": AGENCIA, "numero_cuenta": numero_cuenta,
     }
 
 
@@ -41,6 +43,7 @@ class ServicioCuentas:
             return existente
 
         cuenta_id = uuid.uuid4().hex[:12]
+        numero = elegir_numero(cuenta_id, self._cuentas.buscar_por_numero)
         libro = Livro()
         resultado = CriarConta(cuenta_id, saldo_inicial_centavos).aplicar(
             libro, indice=1, instante=datetime.now(timezone.utc).timestamp())
@@ -48,13 +51,19 @@ class ServicioCuentas:
         ahora = datetime.now(timezone.utc)
         cuerpo = {
             "cuenta": para_json(_fila_vacia(
-                cuenta_id, usuario_id, moneda, resultado["saldo_centavos"], ahora)),
+                cuenta_id, usuario_id, moneda, resultado["saldo_centavos"], ahora, numero)),
             "operacion": para_json(fila_operacion(
                 op_id, "CREACION", None, cuenta_id, saldo_inicial_centavos, ahora)),
         }
         if not self._nodo.proponer(op_id, "CREACION", cuerpo):
             raise RuntimeError("sin_quorum")
-        return {"id": cuenta_id, "saldo_centavos": resultado["saldo_centavos"]}
+        return {
+            "id": cuenta_id,
+            "saldo_centavos": resultado["saldo_centavos"],
+            "numero_cuenta": numero,
+            "agencia": AGENCIA,
+            "moneda": moneda,
+        }
 
     def consultar_saldo(self, cuenta_id: str) -> dict:
         fila = self._cuentas.buscar_por_id(cuenta_id)
@@ -64,6 +73,13 @@ class ServicioCuentas:
 
     def listar_cuentas(self, usuario_id: str) -> list[dict]:
         return [para_json(dict(fila)) for fila in self._cuentas.listar_por_usuario(usuario_id)]
+
+    def buscar_por_numero(self, texto: str) -> dict:
+        numero = normalizar_numero(texto)
+        fila = self._cuentas.buscar_por_numero(numero)
+        if fila is None:
+            raise ValueError("no hay una cuenta con ese número")
+        return fila
 
     def _mover(self, cuenta_id: str, operacion_cls, valor_centavos: int, tipo: str,
                op_id: str) -> dict:
