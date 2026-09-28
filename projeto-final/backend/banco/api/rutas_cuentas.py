@@ -36,6 +36,15 @@ def crear_cuenta(req: CrearCuentaRequest, x_op_id: str = Header(...),
         raise traducir(error)
 
 
+@router.get("")
+def listar_cuentas(usuario_id: str = Depends(usuario_autenticado),
+                   servicio=Depends(obtener_servicio_cuentas)):
+    try:
+        return servicio.listar_cuentas(usuario_id)
+    except Exception as error:
+        raise traducir(error)
+
+
 @router.get("/{cuenta_id}")
 def consultar_saldo(cuenta_id: str, usuario_id: str = Depends(usuario_autenticado),
                      servicio=Depends(obtener_servicio_cuentas)):

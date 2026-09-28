@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { api } from "../../api/cliente.js";
 import Aviso from "../../componentes/Aviso.jsx";
 import Boton from "../../componentes/Boton.jsx";
-import Campo from "../../componentes/Campo.jsx";
+import CampoCuenta from "../../componentes/CampoCuenta.jsx";
 import Pantalla from "../../componentes/Pantalla.jsx";
 import { formato } from "../../lib/dinero.js";
-import { guardarCuentaId, leerCuentaId } from "../../lib/sesion.js";
+import { guardarCuentaId, leerCuentaId, recordarCuenta } from "../../lib/sesion.js";
 
 export default function Saldo() {
   const [cuentaId, setCuentaId] = useState(leerCuentaId);
@@ -13,14 +13,14 @@ export default function Saldo() {
   const [error, setError] = useState(null);
   const [ocupado, setOcupado] = useState(false);
 
-  async function enviar(evento) {
-    evento.preventDefault();
+  async function consultar(id) {
     setError(null);
     setCuenta(null);
     setOcupado(true);
     try {
-      const datos = await api.consultarSaldo(cuentaId.trim());
-      guardarCuentaId(cuentaId.trim());
+      const datos = await api.consultarSaldo(id.trim());
+      guardarCuentaId(id.trim());
+      recordarCuenta(datos);
       setCuenta(datos);
     } catch (err) {
       setError(err.message);
@@ -29,10 +29,19 @@ export default function Saldo() {
     }
   }
 
+  useEffect(() => {
+    if (cuentaId) consultar(cuentaId);
+  }, []);
+
+  async function enviar(evento) {
+    evento.preventDefault();
+    await consultar(cuentaId);
+  }
+
   return (
     <Pantalla titulo="Consultar saldo" volver>
       <form className="tarjeta" onSubmit={enviar}>
-        <Campo etiqueta="Id de cuenta" value={cuentaId} onChange={(e) => setCuentaId(e.target.value)} required />
+        <CampoCuenta value={cuentaId} onChange={(e) => setCuentaId(e.target.value)} />
         <Aviso error>{error}</Aviso>
         <Boton disabled={ocupado}>{ocupado ? "Consultando…" : "Consultar"}</Boton>
       </form>

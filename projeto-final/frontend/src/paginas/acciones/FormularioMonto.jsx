@@ -3,9 +3,10 @@ import { api } from "../../api/cliente.js";
 import Aviso from "../../componentes/Aviso.jsx";
 import Boton from "../../componentes/Boton.jsx";
 import Campo from "../../componentes/Campo.jsx";
+import CampoCuenta from "../../componentes/CampoCuenta.jsx";
 import Pantalla from "../../componentes/Pantalla.jsx";
 import { aCentavos, formato } from "../../lib/dinero.js";
-import { leerCuentaId } from "../../lib/sesion.js";
+import { guardarCuentaId, leerCuentaId, recordarCuenta } from "../../lib/sesion.js";
 
 export default function FormularioMonto({ titulo, enviarMonto }) {
   const [cuentaId, setCuentaId] = useState(leerCuentaId);
@@ -20,7 +21,10 @@ export default function FormularioMonto({ titulo, enviarMonto }) {
     setResultado(null);
     setOcupado(true);
     try {
-      setResultado(await enviarMonto(cuentaId.trim(), aCentavos(monto)));
+      const datos = await enviarMonto(cuentaId.trim(), aCentavos(monto));
+      guardarCuentaId(cuentaId.trim());
+      recordarCuenta({ id: cuentaId.trim(), ...datos });
+      setResultado(datos);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -31,7 +35,7 @@ export default function FormularioMonto({ titulo, enviarMonto }) {
   return (
     <Pantalla titulo={titulo} volver>
       <form className="tarjeta" onSubmit={enviar}>
-        <Campo etiqueta="Id de cuenta" value={cuentaId} onChange={(e) => setCuentaId(e.target.value)} required />
+        <CampoCuenta value={cuentaId} onChange={(e) => setCuentaId(e.target.value)} />
         <Campo etiqueta="Monto" inputMode="decimal" value={monto}
                onChange={(e) => setMonto(e.target.value)} required />
         <Aviso error>{error}</Aviso>

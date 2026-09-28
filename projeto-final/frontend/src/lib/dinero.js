@@ -10,3 +10,9 @@ export function formato(centavos, moneda = "") {
   const valor = (Number(centavos) / 100).toFixed(2);
   return moneda ? `${valor} ${moneda}` : valor;
 }
+
+export function mascaraCuenta(id) {
+  const texto = String(id || "");
+  if (texto.length <= 4) return texto;
+  return `···· ${texto.slice(-4)}`;
+}

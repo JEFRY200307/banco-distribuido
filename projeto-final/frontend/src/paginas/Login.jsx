@@ -32,6 +32,11 @@ export default function Login() {
 
   return (
     <Pantalla titulo="Iniciar sesión">
+      <div className="portada">
+        <img src="/logo.png" alt="" />
+        <strong>Banco distribuido</strong>
+        <p>Cuentas, depósitos y transferencias</p>
+      </div>
       <form className="tarjeta" onSubmit={enviar}>
         <Campo etiqueta="Email" type="email" autoComplete="email" value={email}
                onChange={(e) => setEmail(e.target.value)} required />

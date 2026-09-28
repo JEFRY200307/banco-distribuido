@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { api } from "../../api/cliente.js";
 import Aviso from "../../componentes/Aviso.jsx";
 import Boton from "../../componentes/Boton.jsx";
-import Campo from "../../componentes/Campo.jsx";
+import CampoCuenta from "../../componentes/CampoCuenta.jsx";
 import Pantalla from "../../componentes/Pantalla.jsx";
 import { formato } from "../../lib/dinero.js";
-import { leerCuentaId } from "../../lib/sesion.js";
+import { guardarCuentaId, leerCuentaId } from "../../lib/sesion.js";
 
 export default function Extracto() {
   const [cuentaId, setCuentaId] = useState(leerCuentaId);
@@ -13,13 +13,13 @@ export default function Extracto() {
   const [error, setError] = useState(null);
   const [ocupado, setOcupado] = useState(false);
 
-  async function enviar(evento) {
-    evento.preventDefault();
+  async function consultar(id) {
     setError(null);
     setFilas(null);
     setOcupado(true);
     try {
-      setFilas(await api.consultarExtracto(cuentaId.trim()));
+      guardarCuentaId(id.trim());
+      setFilas(await api.consultarExtracto(id.trim()));
     } catch (err) {
       setError(err.message);
     } finally {
@@ -27,10 +27,19 @@ export default function Extracto() {
     }
   }
 
+  useEffect(() => {
+    if (cuentaId) consultar(cuentaId);
+  }, []);
+
+  async function enviar(evento) {
+    evento.preventDefault();
+    await consultar(cuentaId);
+  }
+
   return (
     <Pantalla titulo="Extracto" volver>
       <form className="tarjeta" onSubmit={enviar}>
-        <Campo etiqueta="Id de cuenta" value={cuentaId} onChange={(e) => setCuentaId(e.target.value)} required />
+        <CampoCuenta value={cuentaId} onChange={(e) => setCuentaId(e.target.value)} />
         <Aviso error>{error}</Aviso>
         <Boton disabled={ocupado}>{ocupado ? "Buscando…" : "Ver extracto"}</Boton>
       </form>

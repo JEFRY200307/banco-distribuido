@@ -5,7 +5,7 @@ import Boton from "../../componentes/Boton.jsx";
 import Campo from "../../componentes/Campo.jsx";
 import Pantalla from "../../componentes/Pantalla.jsx";
 import { aCentavos, formato } from "../../lib/dinero.js";
-import { guardarCuentaId, leerCuentaId, usuarioId } from "../../lib/sesion.js";
+import { guardarCuentaId, recordarCuenta, usuarioId } from "../../lib/sesion.js";
 
 const MONEDAS = ["PEN", "USD", "BRL"];
 
@@ -28,8 +28,10 @@ export default function CrearCuenta() {
     setOcupado(true);
     try {
       const cuenta = await api.crearCuenta(id, moneda, aCentavos(monto));
+      const completa = { ...cuenta, moneda };
       guardarCuentaId(cuenta.id);
-      setCreada(cuenta);
+      recordarCuenta(completa);
+      setCreada(completa);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -53,8 +55,8 @@ export default function CrearCuenta() {
       {creada && (
         <div className="saldo-grande">
           <div className="etiqueta">Cuenta {creada.id}</div>
-          <div className="monto">{formato(creada.saldo_centavos, moneda)}</div>
-          {leerCuentaId() && <p className="subtitulo">Quedó anotada para las otras pantallas.</p>}
+          <div className="monto">{formato(creada.saldo_centavos, creada.moneda || moneda)}</div>
+          <p className="subtitulo">Ya aparece en Inicio.</p>
         </div>
       )}
     </Pantalla>

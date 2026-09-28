@@ -33,13 +33,13 @@ El botón principal mide al menos 54px de alto y ocupa el ancho de la tarjeta. E
 
 | Pieza | Qué es |
 |---|---|
-| `Pantalla` | Cabecera con el punto morado, título y, si hace falta, volver |
+| `Pantalla` | Cabecera con el logo, título, volver o menú de tres líneas |
 | `Campo` | Etiqueta más input o select |
 | `Boton` | Principal, secundario o peligro |
 | `Aviso` | Nota neutra o error |
 | `Carga` | Texto mientras llega el código de otra pantalla |
 
-La marca es un círculo morado de 14px junto al título. No hay logotipo de archivo aparte de los iconos de la PWA: un cuadrado `#820AD1` con un círculo blanco al centro (`public/icon-192.png` y `public/icon-512.png`).
+La marca es el escudo del archivo `public/logo.jpg`. La cabecera usa `public/logo.png`. El favicon y los iconos de la PWA (`favicon.png`, `icon-192.png`, `icon-512.png`) son ese mismo escudo sobre blanco.
 
 ## Móvil
 
