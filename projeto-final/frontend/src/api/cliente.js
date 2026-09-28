@@ -43,6 +43,7 @@ export const api = {
     peticion("/auth/recuperar", { metodo: "POST", cuerpo: { email, contrasena } }),
   crearCuenta: (usuario_id, moneda, saldo_inicial_centavos) =>
     peticion("/cuentas", { metodo: "POST", cuerpo: { usuario_id, moneda, saldo_inicial_centavos } }),
+  listarCuentas: () => peticion("/cuentas"),
   consultarSaldo: (cuentaId) => peticion(`/cuentas/${cuentaId}`),
   consultarExtracto: (cuentaId) => peticion(`/cuentas/${cuentaId}/extracto`),
   depositar: (cuentaId, montoCentavos) =>

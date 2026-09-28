@@ -62,6 +62,9 @@ class ServicioCuentas:
             raise ValueError(f"la cuenta {cuenta_id!r} no existe")
         return fila
 
+    def listar_cuentas(self, usuario_id: str) -> list[dict]:
+        return [para_json(dict(fila)) for fila in self._cuentas.listar_por_usuario(usuario_id)]
+
     def _mover(self, cuenta_id: str, operacion_cls, valor_centavos: int, tipo: str,
                op_id: str) -> dict:
         existente = self._operaciones.buscar_por_op_id(op_id)
