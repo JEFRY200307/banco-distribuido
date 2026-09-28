@@ -5,6 +5,7 @@ import Aviso from "../componentes/Aviso.jsx";
 import Boton from "../componentes/Boton.jsx";
 import Campo from "../componentes/Campo.jsx";
 import Pantalla from "../componentes/Pantalla.jsx";
+import { useIdioma } from "../lib/idioma.jsx";
 
 export default function Recuperar() {
   const [email, setEmail] = useState("");
@@ -12,17 +13,18 @@ export default function Recuperar() {
   const [repetir, setRepetir] = useState("");
   const [error, setError] = useState(null);
   const [ocupado, setOcupado] = useState(false);
+  const { t } = useIdioma();
   const navegar = useNavigate();
 
   async function enviar(evento) {
     evento.preventDefault();
     setError(null);
     if (contrasena.length < 8) {
-      setError("La contraseña necesita al menos 8 caracteres");
+      setError(t("registro.corta"));
       return;
     }
     if (contrasena !== repetir) {
-      setError("Las contraseñas no coinciden");
+      setError(t("recuperar.noCoincide"));
       return;
     }
     setOcupado(true);
@@ -37,19 +39,17 @@ export default function Recuperar() {
   }
 
   return (
-    <Pantalla titulo="Recuperar contraseña" volver>
-      <Aviso>
-        No hay correo de confirmación. Si el email existe, esta pantalla le pone la contraseña nueva.
-      </Aviso>
+    <Pantalla titulo={t("recuperar.titulo")} volver>
+      <Aviso>{t("recuperar.aviso")}</Aviso>
       <form className="tarjeta" onSubmit={enviar}>
-        <Campo etiqueta="Email" type="email" autoComplete="email" value={email}
+        <Campo etiqueta={t("comun.email")} type="email" autoComplete="email" value={email}
                onChange={(e) => setEmail(e.target.value)} required />
-        <Campo etiqueta="Contraseña nueva" type="password" autoComplete="new-password"
+        <Campo etiqueta={t("recuperar.nueva")} type="password" autoComplete="new-password"
                value={contrasena} onChange={(e) => setContrasena(e.target.value)} required />
-        <Campo etiqueta="Repetir contraseña" type="password" autoComplete="new-password"
+        <Campo etiqueta={t("recuperar.repetir")} type="password" autoComplete="new-password"
                value={repetir} onChange={(e) => setRepetir(e.target.value)} required />
         <Aviso error>{error}</Aviso>
-        <Boton disabled={ocupado}>{ocupado ? "Guardando…" : "Actualizar contraseña"}</Boton>
+        <Boton disabled={ocupado}>{ocupado ? t("recuperar.guardando") : t("recuperar.boton")}</Boton>
       </form>
     </Pantalla>
   );

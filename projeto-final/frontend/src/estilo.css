@@ -35,13 +35,20 @@ body {
 header {
   padding: 16px 16px 14px;
   display: grid;
-  grid-template-columns: 44px 1fr 44px;
+  grid-template-columns: 44px 1fr auto;
   align-items: center;
   gap: 8px;
   background: var(--superficie);
   border-bottom: 1px solid var(--borde);
 }
 .cabecera-lado { display: flex; align-items: center; justify-content: center; min-height: 40px; }
+.cabecera-der { justify-content: flex-end; gap: 6px; }
+.idioma-btn {
+  min-width: 40px; height: 40px;
+  border: none; border-radius: 12px;
+  background: var(--morado-suave); color: var(--morado);
+  font-weight: 800; font-size: 13px; font-family: inherit; cursor: pointer;
+}
 header h1 { font-size: 16px; margin: 0; font-weight: 700; letter-spacing: -0.02em; }
 .marca-titulo { display: flex; align-items: center; justify-content: center; gap: 8px; min-width: 0; }
 .logo-app { width: 28px; height: 28px; object-fit: contain; flex-shrink: 0; }
@@ -331,8 +338,13 @@ button:disabled { opacity: 0.6; cursor: default; }
 .bloque-cuentas { display: flex; flex-direction: column; gap: 10px; }
 .bloque-cuentas h2 { margin: 4px 0 0; font-size: 15px; font-weight: 700; }
 .cuentas-visuales { display: flex; flex-direction: column; gap: 12px; }
-.cuenta-visual {
+.cuenta-cuerpo {
   display: flex; flex-direction: column; align-items: flex-start; gap: 14px;
+  width: 100%; padding: 0; border: none; background: transparent; color: inherit;
+  text-align: left; font-family: inherit; cursor: pointer;
+}
+.cuenta-visual {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 10px;
   width: 100%; text-align: left; color: white; border: none; cursor: pointer;
   border-radius: 22px; padding: 18px 18px 16px; min-height: 132px;
   font-family: inherit;
@@ -350,6 +362,25 @@ button:disabled { opacity: 0.6; cursor: default; }
 }
 .vacio p { margin: 0; color: var(--texto-tenue); font-size: 14px; }
 .vacio a { color: var(--morado); font-weight: 700; text-decoration: none; }
+.btn-texto {
+  border: none; background: transparent; color: white;
+  font-family: inherit; font-size: 12px; font-weight: 700;
+  padding: 0; cursor: pointer; text-decoration: underline;
+}
+.cuenta-visual .acciones-cuenta { display: flex; width: 100%; justify-content: space-between; align-items: center; }
+.tipo-grid { display: flex; flex-direction: column; gap: 10px; }
+.tipo-opcion {
+  text-align: left; width: 100%;
+  background: var(--superficie); border: 1px solid var(--borde);
+  border-radius: 16px; padding: 14px 16px; cursor: pointer; font-family: inherit; color: inherit;
+}
+.tipo-opcion strong { display: block; font-size: 15px; }
+.tipo-opcion span { display: block; margin-top: 4px; font-size: 12px; color: var(--texto-tenue); }
+.btn-expansion {
+  width: 100%; min-height: 44px;
+  border: none; background: transparent; color: var(--morado);
+  font-family: inherit; font-weight: 700; cursor: pointer;
+}
 
 @media (max-width: 640px) {
   body {

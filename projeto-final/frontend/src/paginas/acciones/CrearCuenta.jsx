@@ -4,7 +4,8 @@ import Aviso from "../../componentes/Aviso.jsx";
 import Boton from "../../componentes/Boton.jsx";
 import Campo from "../../componentes/Campo.jsx";
 import Pantalla from "../../componentes/Pantalla.jsx";
-import { aCentavos, formato } from "../../lib/dinero.js";
+import { aCentavos, formato, numeroVisible } from "../../lib/dinero.js";
+import { useIdioma } from "../../lib/idioma.jsx";
 import { guardarCuentaId, recordarCuenta, usuarioId } from "../../lib/sesion.js";
 
 const MONEDAS = ["PEN", "USD", "BRL"];
@@ -15,6 +16,7 @@ export default function CrearCuenta() {
   const [error, setError] = useState(null);
   const [creada, setCreada] = useState(null);
   const [ocupado, setOcupado] = useState(false);
+  const { t } = useIdioma();
 
   async function enviar(evento) {
     evento.preventDefault();
@@ -22,7 +24,7 @@ export default function CrearCuenta() {
     setCreada(null);
     const id = usuarioId();
     if (!id) {
-      setError("La sesión no trae un usuario. Vuelve a entrar.");
+      setError(t("crear.sesion"));
       return;
     }
     setOcupado(true);
@@ -40,23 +42,23 @@ export default function CrearCuenta() {
   }
 
   return (
-    <Pantalla titulo="Crear cuenta" volver>
+    <Pantalla titulo={t("crear.titulo")} volver>
       <form className="tarjeta" onSubmit={enviar}>
-        <Campo etiqueta="Moneda">
+        <Campo etiqueta={t("comun.moneda")}>
           <select className="select-cuenta" value={moneda} onChange={(e) => setMoneda(e.target.value)}>
             {MONEDAS.map((item) => <option key={item}>{item}</option>)}
           </select>
         </Campo>
-        <Campo etiqueta="Saldo inicial" inputMode="decimal" value={monto}
+        <Campo etiqueta={t("crear.inicial")} inputMode="decimal" value={monto}
                onChange={(e) => setMonto(e.target.value)} required />
         <Aviso error>{error}</Aviso>
-        <Boton disabled={ocupado}>{ocupado ? "Creando…" : "Crear cuenta"}</Boton>
+        <Boton disabled={ocupado}>{ocupado ? t("crear.creando") : t("crear.boton")}</Boton>
       </form>
       {creada && (
         <div className="saldo-grande">
-          <div className="etiqueta">Cuenta {creada.id}</div>
+          <div className="etiqueta">{numeroVisible(creada)}</div>
           <div className="monto">{formato(creada.saldo_centavos, creada.moneda || moneda)}</div>
-          <p className="subtitulo">Ya aparece en Inicio.</p>
+          <p className="subtitulo">{t("crear.lista")}</p>
         </div>
       )}
     </Pantalla>

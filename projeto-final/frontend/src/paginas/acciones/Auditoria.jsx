@@ -4,8 +4,10 @@ import Aviso from "../../componentes/Aviso.jsx";
 import Boton from "../../componentes/Boton.jsx";
 import Pantalla from "../../componentes/Pantalla.jsx";
 import { formato } from "../../lib/dinero.js";
+import { useIdioma } from "../../lib/idioma.jsx";
 
 export default function Auditoria() {
+  const { t } = useIdioma();
   const [datos, setDatos] = useState(null);
   const [error, setError] = useState(null);
   const [ocupado, setOcupado] = useState(false);
@@ -23,19 +25,19 @@ export default function Auditoria() {
   }
 
   return (
-    <Pantalla titulo="Auditoría" volver>
-      <Aviso>Compara la suma de saldos con el log del nodo que atendió la llamada. No hay rol administrador.</Aviso>
+    <Pantalla titulo={t("auditoria.titulo")} volver>
+      <Aviso>{t("auditoria.aviso")}</Aviso>
       <Boton tipo="button" disabled={ocupado} onClick={consultar}>
-        {ocupado ? "Calculando…" : "Auditar nodo"}
+        {ocupado ? t("auditoria.calculando") : t("auditoria.boton")}
       </Boton>
       <Aviso error>{error}</Aviso>
       {datos && (
         <div className="resumen">
-          <div className="linea-resumen"><span>Suma de saldos</span><strong>{formato(datos.total_centavos)}</strong></div>
-          <div className="linea-resumen"><span>Suma del log</span><strong>{formato(datos.total_esperado_centavos)}</strong></div>
-          <div className="linea-resumen"><span>Diferencia</span><strong>{formato(datos.divergencia_centavos)}</strong></div>
+          <div className="linea-resumen"><span>{t("auditoria.saldos")}</span><strong>{formato(datos.total_centavos)}</strong></div>
+          <div className="linea-resumen"><span>{t("auditoria.log")}</span><strong>{formato(datos.total_esperado_centavos)}</strong></div>
+          <div className="linea-resumen"><span>{t("auditoria.diff")}</span><strong>{formato(datos.divergencia_centavos)}</strong></div>
           <div className={datos.divergente ? "chip chip-error" : "chip chip-exito"}>
-            {datos.divergente ? "Hay divergencia" : "Cuadra"}
+            {datos.divergente ? t("auditoria.diverge") : t("auditoria.cuadra")}
           </div>
         </div>
       )}

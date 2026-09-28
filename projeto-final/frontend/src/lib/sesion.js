@@ -2,6 +2,7 @@ const CLAVE = "token";
 const CUENTA = "cuentaId";
 const CUENTAS = "cuentas";
 const SALDOS = "saldosVisibles";
+const PRINCIPAL = "cuentaPrincipal";
 
 export function leerToken() {
   return localStorage.getItem(CLAVE);
@@ -12,8 +13,10 @@ export function guardarToken(token) {
 }
 
 export function cerrarSesion() {
+  const id = usuarioId();
   localStorage.removeItem(CLAVE);
   localStorage.removeItem(CUENTAS);
+  if (id) localStorage.removeItem(`${PRINCIPAL}:${id}`);
   sessionStorage.removeItem(CUENTA);
 }
 
@@ -55,6 +58,8 @@ export function recordarCuenta(cuenta) {
     moneda: cuenta.moneda || anterior?.moneda || "",
     saldo_centavos: cuenta.saldo_centavos ?? anterior?.saldo_centavos ?? null,
     estado: cuenta.estado || anterior?.estado || "",
+    numero_cuenta: cuenta.numero_cuenta || anterior?.numero_cuenta || "",
+    agencia: cuenta.agencia || anterior?.agencia || "0001",
   };
   const resto = previas.filter((item) => item.id !== cuenta.id);
   localStorage.setItem(CUENTAS, JSON.stringify([...resto, siguiente]));
@@ -66,7 +71,20 @@ export function recordarCuentas(lista) {
     moneda: cuenta.moneda || "",
     saldo_centavos: cuenta.saldo_centavos ?? null,
     estado: cuenta.estado || "",
+    numero_cuenta: cuenta.numero_cuenta || "",
+    agencia: cuenta.agencia || "0001",
   }))));
+}
+
+export function leerPrincipal() {
+  const id = usuarioId();
+  if (!id) return "";
+  return localStorage.getItem(`${PRINCIPAL}:${id}`) || "";
+}
+
+export function guardarPrincipal(cuentaId) {
+  const id = usuarioId();
+  if (id && cuentaId) localStorage.setItem(`${PRINCIPAL}:${id}`, cuentaId);
 }
 
 export function leerSaldosVisibles() {

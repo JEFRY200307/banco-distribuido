@@ -6,9 +6,12 @@ import Campo from "../../componentes/Campo.jsx";
 import CampoCuenta from "../../componentes/CampoCuenta.jsx";
 import Pantalla from "../../componentes/Pantalla.jsx";
 import { aCentavos, formato } from "../../lib/dinero.js";
+import { useIdioma } from "../../lib/idioma.jsx";
 import { guardarCuentaId, leerCuentaId, recordarCuenta } from "../../lib/sesion.js";
 
-export default function FormularioMonto({ titulo, enviarMonto }) {
+export default function FormularioMonto({ claveTitulo, enviarMonto }) {
+  const { t } = useIdioma();
+  const titulo = t(claveTitulo);
   const [cuentaId, setCuentaId] = useState(leerCuentaId);
   const [monto, setMonto] = useState("");
   const [resultado, setResultado] = useState(null);
@@ -36,14 +39,14 @@ export default function FormularioMonto({ titulo, enviarMonto }) {
     <Pantalla titulo={titulo} volver>
       <form className="tarjeta" onSubmit={enviar}>
         <CampoCuenta value={cuentaId} onChange={(e) => setCuentaId(e.target.value)} />
-        <Campo etiqueta="Monto" inputMode="decimal" value={monto}
+        <Campo etiqueta={t("comun.monto")} inputMode="decimal" value={monto}
                onChange={(e) => setMonto(e.target.value)} required />
         <Aviso error>{error}</Aviso>
-        <Boton disabled={ocupado}>{ocupado ? "Enviando…" : titulo}</Boton>
+        <Boton disabled={ocupado || !cuentaId}>{ocupado ? t("comun.enviando") : titulo}</Boton>
       </form>
       {resultado?.saldo_centavos != null && (
         <div className="saldo-grande">
-          <div className="etiqueta">Saldo resultante</div>
+          <div className="etiqueta">{t("comun.saldoResultante")}</div>
           <div className="monto">{formato(resultado.saldo_centavos)}</div>
         </div>
       )}
@@ -52,9 +55,9 @@ export default function FormularioMonto({ titulo, enviarMonto }) {
 }
 
 export function pantallaDeposito() {
-  return <FormularioMonto titulo="Depositar" enviarMonto={api.depositar} />;
+  return <FormularioMonto claveTitulo="deposito.titulo" enviarMonto={api.depositar} />;
 }
 
 export function pantallaRetiro() {
-  return <FormularioMonto titulo="Retirar" enviarMonto={api.retirar} />;
+  return <FormularioMonto claveTitulo="retiro.titulo" enviarMonto={api.retirar} />;
 }

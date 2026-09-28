@@ -45,6 +45,21 @@ def listar_cuentas(usuario_id: str = Depends(usuario_autenticado),
         raise traducir(error)
 
 
+@router.get("/por-numero/{numero}")
+def buscar_por_numero(numero: str, usuario_id: str = Depends(usuario_autenticado),
+                      servicio=Depends(obtener_servicio_cuentas)):
+    try:
+        cuenta = servicio.buscar_por_numero(numero)
+        return {
+            "id": cuenta["id"],
+            "moneda": cuenta["moneda"],
+            "numero_cuenta": cuenta.get("numero_cuenta"),
+            "agencia": cuenta.get("agencia") or "0001",
+        }
+    except Exception as error:
+        raise traducir(error)
+
+
 @router.get("/{cuenta_id}")
 def consultar_saldo(cuenta_id: str, usuario_id: str = Depends(usuario_autenticado),
                      servicio=Depends(obtener_servicio_cuentas)):

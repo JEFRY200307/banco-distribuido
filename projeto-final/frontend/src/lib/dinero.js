@@ -16,3 +16,9 @@ export function mascaraCuenta(id) {
   if (texto.length <= 4) return texto;
   return `···· ${texto.slice(-4)}`;
 }
+
+export function numeroVisible(cuenta) {
+  if (!cuenta?.numero_cuenta) return mascaraCuenta(cuenta?.id);
+  const agencia = (cuenta.agencia || "0001").trim();
+  return `${agencia} · ${cuenta.numero_cuenta}`;
+}

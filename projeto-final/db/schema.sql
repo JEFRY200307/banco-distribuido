@@ -24,6 +24,8 @@ CREATE TABLE cuenta (
     tasa_interes           NUMERIC(9,6) CHECK (tasa_interes IS NULL OR tasa_interes > 0),
     fecha_ultimo_interes   TIMESTAMP,
     fecha_vencimiento      TIMESTAMP,
+    agencia                CHAR(4) NOT NULL DEFAULT '0001',
+    numero_cuenta          VARCHAR(16) UNIQUE,
     CONSTRAINT chk_producto_completo CHECK (
         (tipo_producto = 'CORRIENTE'
             AND tasa_interes IS NULL AND fecha_ultimo_interes IS NULL AND fecha_vencimiento IS NULL)
